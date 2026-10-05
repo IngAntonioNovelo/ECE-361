@@ -24,20 +24,29 @@ static uint32_t low_mask(int width)
 }
 
 
-void print_binary (uint32_t x, int width)
+void print_binary(uint32_t x, int width)
 {
 	if (width < 1 || width > 32)
+	{
 		return;
-
-	for (int bit = width =1; bit >= 0; bit--)
+	}
+	
+	
+	for (int bit = width - 1; bit >= 0; bit--)
 	{
 		if (x & (1u << bit))
+		{
 			putchar('1');
+		}
 		else
+		{
 			putchar('0');
-
+		}
+		
 		if (bit > 0 && bit % 4 == 0)
+		{
 			putchar(' ');
+		}
 	}
 }
 
