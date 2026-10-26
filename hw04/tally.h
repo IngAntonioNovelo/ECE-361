@@ -1,6 +1,6 @@
 #ifndef TALLY_H
 #define TALLY_H
-#include <studio.h>
+#include <stdio.h>
 
 #define TALLY_MAX 4	/* tallies that can exist at the same time */
 #define TALLY_NAMES 16	/* different names one tally can hold */
