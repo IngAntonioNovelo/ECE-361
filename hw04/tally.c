@@ -154,3 +154,9 @@ int tally_size(const tally_t *t)
 	/* State B: Return the number of distinct names. */
 	return t->n;
 }
+
+// one line per name, name count, in alphabetical (strcmp) order
+void tally_print(const tally_t *t, FILE *out)
+{
+
+}
