@@ -158,5 +158,15 @@ int tally_size(const tally_t *t)
 // one line per name, name count, in alphabetical (strcmp) order
 void tally_print(const tally_t *t, FILE *out)
 {
+	if (t == NULL || out == NULL)
+	{
+		return;
+	}
+
+/* print each valid entry */
+	for (int i = 0; i < t->n; i++)
+	{
+		fprintf(out, "%s %d\n", t->e[i].name, t->e[i].count);
+	}
 
 }
