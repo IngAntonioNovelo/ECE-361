@@ -1,0 +1,13 @@
+# Compiled files
+*.o
+*.swp
+events
+
+# Generated test executables
+tests/add_smoke
+tests/print_smoke
+tests/test_hw04_tally
+
+# Temporary test output
+tests/print_actual.txt
+tests/print_expected.txt
