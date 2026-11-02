@@ -7,6 +7,32 @@
 
 #include "lock.h"
 
+
+/* Readable names for each state. */
+static const char *const STATE_NAMES[N_STATES] = {
+	[LOCKED] = "LOCKED",
+	[GOT1] = "GOT1",
+	[GOT2] = "GOT2",
+	[OPEN] = "OPEN"
+};
+
+/* Readable names for each event. */
+static const char *const EVENT_NAMES[N_EVENTS] = {
+	[E_RIGHT] = "RIGHT",
+	[E_WRONG] = "WRONG",
+	[E_CLOSE] = "CLOSE",
+	[E_TIMEOUT] = "TIMEOUT"
+};
+
+/* Readable names for each action. */
+static const char *const ACTION_NAMES[N_ACTIONS] = {
+	[A_UNDEFINED] = "UNDEFINED",
+	[A_NONE] = "NONE",
+	[A_UNLOCK] = "UNLOCK",
+	[A_LOCK] = "LOCK",
+	[A_BEEP] = "BEEP"
+};
+
 const transition_t lock_table[N_STATES][N_EVENTS] = 
 {
     // Define the transition table here
@@ -94,20 +120,35 @@ int lock_event(state_t s, char c)
 };
 
 /* Return the name of a state as a string. */
-//const char *state_name(state_t s);
-// {    
+const char *state_name(state_t s)
+{
+	if ((unsigned)s >= (unsigned)N_STATES)
+	{
+		return "?";
+	}
 
-//}
+	return STATE_NAMES[s];
+}
 
 
 /* Return the name of an event as a string. */
-//const char *event_name(event_t e);
-// {
+const char *event_name(event_t e)
+{
+	if ((unsigned)e >= (unsigned)N_EVENTS)
+	{
+		return "?";
+	}
 
-//}
+	return EVENT_NAMES[e];
+}
 
 /* Return the name of an action as a string. */
-//const char *action_name(action_t a);
-// {
+const char *action_name(action_t a)
+{
+	if ((unsigned)a >= (unsigned)N_ACTIONS)
+	{
+		return "?";
+	}
 
-//}
+	return ACTION_NAMES[a];
+}

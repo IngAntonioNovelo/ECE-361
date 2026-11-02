@@ -52,12 +52,12 @@ state_t lock_step(state_t s, event_t e, action_t *action);
 int lock_event(state_t s, char c);
 
 /* Return the name of a state as a string. */
-//const char *state_name(state_t s);
+const char *state_name(state_t s);
 
 /* Return the name of an event as a string. */
-//const char *event_name(event_t e);
+const char *event_name(event_t e);
 
 /* Return the name of an action as a string. */
-//const char *action_name(action_t a);
+const char *action_name(action_t a);
 
 #endif
