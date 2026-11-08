@@ -1,6 +1,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <assert.h>
+#include <scenario.h>
 
 #include "panel.h"
 #include "iom361_r4.h"
@@ -85,6 +87,39 @@ int main(void)
 	check("panel_led: rejects LED 32", panel_led(base, 32, 1) == -1);
 	check("panel_toggle: rejects negative LED", panel_toggle(base, -1) == -1);
 	check("panel_toggle: rejects LED 32", panel_toggle(base, 32) == -1);
+
+        
+    static void test_scenario_lookup(void)
+    {
+        scenario_t scenario = {0};
+
+        scenario.count = 2;
+
+        scenario.lines[0].tick = 4;
+        scenario.lines[0].temp_c = 22.0f;
+
+        scenario.lines[1].tick = 8;
+        scenario.lines[1].temp_c = 25.0f;
+
+        const scenario_line_t *r;
+
+        r = scenario_at_tick(&scenario, 2);
+        assert(r == NULL);
+
+        r = scenario_at_tick(&scenario, 4);
+        assert(r == &scenario.lines[0]);
+
+        r = scenario_at_tick(&scenario, 6);
+        assert(r == &scenario.lines[0]);
+
+        r = scenario_at_tick(&scenario, 8);
+        assert(r == &scenario.lines[1]);
+
+        r = scenario_at_tick(&scenario, 10);
+        assert(r == &scenario.lines[1]);
+
+        puts("PASS scenario lookup");
+    }
 
 	printf("Summary: %d passed, %d failed\n", tests_passed, tests_failed);
 	return tests_failed == 0 ? 0 : 1;

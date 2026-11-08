@@ -9,7 +9,8 @@
 
 
 /* Readable names for each state. */
-static const char *const STATE_NAMES[N_STATES] = {
+static const char *const STATE_NAMES[N_STATES] = 
+{
 	[LOCKED] = "LOCKED",
 	[GOT1] = "GOT1",
 	[GOT2] = "GOT2",
@@ -17,7 +18,8 @@ static const char *const STATE_NAMES[N_STATES] = {
 };
 
 /* Readable names for each event. */
-static const char *const EVENT_NAMES[N_EVENTS] = {
+static const char *const EVENT_NAMES[N_EVENTS] = 
+{
 	[E_RIGHT] = "RIGHT",
 	[E_WRONG] = "WRONG",
 	[E_CLOSE] = "CLOSE",
@@ -25,7 +27,8 @@ static const char *const EVENT_NAMES[N_EVENTS] = {
 };
 
 /* Readable names for each action. */
-static const char *const ACTION_NAMES[N_ACTIONS] = {
+static const char *const ACTION_NAMES[N_ACTIONS] = 
+{
 	[A_UNDEFINED] = "UNDEFINED",
 	[A_NONE] = "NONE",
 	[A_UNLOCK] = "UNLOCK",
@@ -33,6 +36,7 @@ static const char *const ACTION_NAMES[N_ACTIONS] = {
 	[A_BEEP] = "BEEP"
 };
 
+// Define the transition table for the lock state machine.
 const transition_t lock_table[N_STATES][N_EVENTS] = 
 {
     // Define the transition table here
@@ -70,9 +74,11 @@ const transition_t lock_table[N_STATES][N_EVENTS] =
     },
 
 };
-    // Look up the transition and return the next state.
+
+// Look up the transition and return the next state.
 state_t lock_step(state_t s, event_t e, action_t *action) 
 {
+    // Return the next state and action based on the current state and event
     transition_t t = lock_table[s][e];
     *action = t.action;
     return t.next;
