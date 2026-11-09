@@ -23,4 +23,8 @@ typedef struct
 	size_t count;
 } scenario_t;
 
+int scenario_load(const char *filename, scenario_t *scenario);
+
+const scenario_line_t *scenario_at_tick(const scenario_t *scenario, int tick);
+
 #endif
