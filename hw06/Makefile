@@ -15,7 +15,7 @@ replay: $(REPLAY_OBJS)
 	$(CC) $(REPLAY_OBJS) -o $@ $(LDLIBS)
 
 tests/test_hw06: $(HW06_TEST_OBJS)
-	$(CC) $(HW06_TEST_OBJS) -o $@ $(LDLIBS)
+	$(CC) $(HW06_TEST_OBJS) -o $@ $(LDLIBS) -Wl,--wrap=iom361_readReg
 
 tests/test_scenario: $(SCENARIO_TEST_OBJS)
 	$(CC) $(SCENARIO_TEST_OBJS) -o $@ $(LDLIBS)

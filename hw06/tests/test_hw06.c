@@ -63,6 +63,41 @@ static void test_scenario_lookup(void)
 }
 
 
+// GNU ld --wrap intercepts sensor.c register reads in this test binary only.
+// A failed HUMID_REG read must not modify any output field.
+static bool inject_humidity_error = false;
+
+extern uint32_t __real_iom361_readReg(uint32_t *base, uint32_t offset, int *rc);
+
+uint32_t __wrap_iom361_readReg(uint32_t *base, uint32_t offset, int *rc)
+{
+	if (inject_humidity_error && offset == HUMID_REG)
+	{
+		*rc = 77;
+		return 0u;
+	}
+
+	return __real_iom361_readReg(base, offset, rc);
+}
+
+static void test_sensor_failure_unchanged(uint32_t *base)
+{
+	reading_t output = {0};
+	output.t = (time_t)1234;
+	output.temp_c = -12.5f;
+	output.rh_pct = 78.9f;
+
+	inject_humidity_error = true;
+	int result = sensor_read(base, (time_t)9999, &output);
+	inject_humidity_error = false;
+
+	check("sensor: failed humidity read returns error and preserves output",
+		result == 77 &&
+		output.t == (time_t)1234 &&
+		output.temp_c == -12.5f &&
+		output.rh_pct == 78.9f);
+}
+
 int main(void)
 {
 	int rc = 0;
@@ -75,6 +110,8 @@ int main(void)
 	}
 
 	iom361_set_display(false);
+
+	test_sensor_failure_unchanged(base);
 
 	// Verify temperature conversion and rounding.
 	_iom361_set_sensor1(91.0f, 40.0f);
