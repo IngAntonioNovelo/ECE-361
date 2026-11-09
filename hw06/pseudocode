@@ -1,0 +1,45 @@
+
+START PROGRAM
+
+	Load scenario file
+	Check that scenario file is valid
+
+	Initialize simulated hardware
+		Configure 4 switches
+		Configure 4 LEDs
+		Turn display output off
+
+	Set previous switches to 0
+
+	FOR every tick from 0 through the last tick
+
+		Find the scenario values active at this tick
+
+		Update simulated temperature and humidity
+		Update simulated switches
+
+		Calculate current timestamp = start + tick
+
+		Read temperature register
+		Read humidity register
+		Convert raw values to real units
+
+		Read current switch states
+
+		Determine which switches were just pressed
+
+		FOR each of the 4 switches
+			IF switch was just pressed
+				Toggle its corresponding LED
+			END IF
+		END FOR
+
+		Read current LED states
+		Print timestamp, sensors, switches,
+			pressed switches, and LEDs
+
+		Save current switches as previous switches
+
+	END FOR
+
+END PROGRAM

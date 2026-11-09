@@ -2,10 +2,12 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <assert.h>
-#include "scenario.h"
+#include <time.h>
 
+#include "scenario.h"
 #include "panel.h"
 #include "iom361_r4.h"
+#include "sensor.h"
 
 static int tests_passed = 0;
 static int tests_failed = 0;
@@ -73,6 +75,21 @@ int main(void)
 	}
 
 	iom361_set_display(false);
+
+	// Verify temperature conversion and rounding.
+	_iom361_set_sensor1(91.0f, 40.0f);
+
+	reading_t reading = {0};
+	int sensor_rc = sensor_read(base, (time_t)12345, &reading);
+
+	check("sensor: 91.0 C reads back as 91.0",
+		sensor_rc == 0 && reading.temp_c == 91.0f);
+
+	check("sensor: humidity reads back as 40.0",
+		sensor_rc == 0 && reading.rh_pct == 40.0f);
+
+	check("sensor: timestamp is preserved",
+		sensor_rc == 0 && reading.t == (time_t)12345);
 
 	// Press detection: new press, held switch, and no press.
 	check("pressed: new switch 1", panel_pressed(0x3u, 0x1u) == 0x2u);
