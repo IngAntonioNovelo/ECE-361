@@ -82,6 +82,96 @@ static void test_copy_without_length(istack_t *s)
 	free(copy);
 }
 
+
+/* Verify growth to 1024, LIFO order, and no shrinking. */
+static void test_1000_operations(void)
+{
+	istack_t *s = istack_create();
+	/* Keep one result for the entire sequence, including allocation failure. */
+	int ok = (s != NULL);
+
+	if (s != NULL)
+	{
+		/* Cross several doubling boundaries by storing values 0 through 999. */
+		for (int i = 0; i < 1000; i++)
+		{
+			if (istack_push(s, i) != 0)
+			{
+				ok = 0;
+				break;
+			}
+		}
+
+		/* Repeated doubling from eight should reach capacity 1024. */
+		if (ok)
+		{
+			ok = istack_count(s) == 1000 &&
+				istack_capacity(s) == 1024;
+		}
+
+		/* Every pop must return the next value in reverse insertion order. */
+		if (ok)
+		{
+			for (int i = 999; i >= 0; i--)
+			{
+				int value = -1;
+
+				if (istack_pop(s, &value) != 0 ||
+					value != i)
+				{
+					ok = 0;
+					break;
+				}
+			}
+		}
+
+		/* Draining the stack should retain its allocated capacity for reuse. */
+		if (ok)
+		{
+			ok = istack_count(s) == 0 &&
+				istack_capacity(s) == 1024;
+		}
+	}
+
+	check(ok, "1000 pushes and pops");
+	istack_destroy(s);
+}
+
+
+/* Verify separate stacks do not share storage or counts. */
+static void test_independent_stacks(void)
+{
+	istack_t *a = istack_create();
+	istack_t *b = istack_create();
+
+	int ok = a != NULL && b != NULL;
+
+	if (ok)
+	{
+		int top_a = 0;
+		int top_b = 0;
+
+		/* Interleave pushes to reveal accidental sharing between instances. */
+		ok = istack_push(a, 10) == 0 &&
+			istack_push(b, 20) == 0 &&
+			istack_push(a, 30) == 0 &&
+			istack_peek(a, &top_a) == 0 &&
+			istack_peek(b, &top_b) == 0 &&
+			top_a == 30 &&
+			top_b == 20 &&
+			istack_count(a) == 2 &&
+			istack_count(b) == 1;
+	}
+
+	check(ok, "two independent stacks");
+
+	/* Both stacks still contain values when destroyed. */
+	istack_destroy(a);
+	istack_destroy(b);
+}
+
+
+/* Run the API checks and return failure if any recorded check fails. */
 int main(void)
 {
 	test_null_operations();
@@ -125,22 +215,35 @@ int main(void)
 	test_stack_operations(s);
 
 	/* The ninth push exceeds the initial capacity and should double it. */
-	int pushed = 1;
+	
+    int pushed = 1;
 
-	for (int i = 1; i <= 9; i++)
-	{
-		if (istack_push(s, i * 10) != 0)
-		{
-			pushed = 0;
-			break;
-		}
-	}
+    /* Filling the array exactly must not trigger an early resize. */
+    for (int i = 1; i <= 8; i++)
+    {
+        if (istack_push(s, i * 10) != 0)
+        {
+            pushed = 0;
+            break;
+        }
+    }
 
-	check(pushed &&
-		istack_count(s) == 9 &&
-		istack_capacity(s) == 16 &&
-		!istack_is_empty(s),
-		"nine pushes double capacity");
+    check(pushed &&
+        istack_count(s) == 8 &&
+        istack_capacity(s) == 8,
+        "eight pushes fill initial capacity");
+
+    /* Add the ninth value only after the first eight pushes succeed. */
+    if (pushed)
+    {
+        pushed = istack_push(s, 90) == 0;
+    }
+
+    check(pushed &&
+        istack_count(s) == 9 &&
+        istack_capacity(s) == 16,
+        "ninth push doubles capacity");
+
 	if (pushed)
 	{
 		test_copy_without_length(s);
@@ -198,11 +301,15 @@ int main(void)
 
 	/* The caller owns the exported array separately from the stack. */
 	free(a);
-	istack_destroy(s);
+    istack_destroy(s);
 
-	printf("Summary: %d passed, %d failed\n",
-		passed, failed);
+    /* Use fresh stacks for bulk growth and instance-isolation checks. */
+    test_1000_operations();
+    test_independent_stacks();
 
-	/* Return a failing process status if any recorded check failed. */
-	return failed == 0 ? 0 : 1;
+    printf("Summary: %d passed, %d failed\n",
+        passed, failed);
+
+    /* Let shell scripts detect failures from the process exit status. */
+    return failed == 0 ? 0 : 1;
 }
