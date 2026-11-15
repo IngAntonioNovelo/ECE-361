@@ -1,0 +1,9 @@
+
+# HW07 build artifacts
+/hw07/balance
+/hw07/tests/test_istack
+/hw07/tests/test_istack_asan
+
+# Compiler-generated files
+*.o
+*.d
