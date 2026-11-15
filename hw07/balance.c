@@ -146,15 +146,13 @@ if (!istack_is_empty(open))
 	return 1;
 }
 
+
 /* No mismatches or leftover openers remain, so report the completed totals. */
 printf("balanced: %zu pairs, deepest %zu\n",
 	pairs, deepest);
 
-/* Release the stack before returning success. */
+/* Release both dynamically allocated memory blocks. */
 istack_destroy(open);
-return 0;
 
-	/* Free both the stack's array and its structure after processing input. */
-	istack_destroy(open);
-	return 0;
+return 0;
 }
