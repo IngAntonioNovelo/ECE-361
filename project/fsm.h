@@ -3,13 +3,14 @@
 #define FSM_H
 
 #include <time.h>
+#include <stdint.h>
 
 /* The four states required by Project 5. */
 typedef enum {
-	FSM_OFF,
-	FSM_HEATING,
-	FSM_COOLING,
-	FSM_LOCKOUT,
+	FSM_OFF,     /* Neither furnace nor compressor is running. */
+	FSM_HEATING, /* Furnace is running. */
+	FSM_COOLING, /* Compressor is running. */
+	FSM_LOCKOUT, /* Compressor restart is delayed; heating may still be requested. */
 	FSM_STATE_COUNT /* Table row count; not an operating state. */
 } fsm_state_t;
 
@@ -43,7 +44,8 @@ typedef struct {
 
 /* Classify temperature, system enable, and lockout timing into an event.
    temp_c is in degrees Celsius; now and lockout_until use the same clock.
-   This function is declared here but is not yet defined in fsm.c. */
+   Zero system_on requests shutoff; any nonzero value enables regulation.
+   Cooling may restart when now is equal to or later than lockout_until. */
 fsm_event_t fsm_determine_event(
 	fsm_state_t current_state,
 	float temp_c,
@@ -58,6 +60,38 @@ fsm_transition_t fsm_get_transition(
 	fsm_state_t current_state,
 	fsm_event_t event
 );
+
+
+/* Compressor restart protection, in seconds. */
+enum {
+	FSM_LOCKOUT_TICKS = 120
+};
+
+/* LED register bit masks. */
+#define FSM_LED_FURNACE    (1u << 0)
+#define FSM_LED_COMPRESSOR (1u << 1)
+
+/* Persistent controller information. */
+typedef struct {
+	fsm_state_t state;    /* Current operating mode. */
+	time_t lockout_until; /* Earliest restart time, retained across system-off. */
+	uint32_t leds;        /* Desired LED register value; no hardware write occurs here. */
+} fsm_controller_t;
+
+/* Initialize OFF with no outputs or pending lockout.
+   Return 0 on success, or -1 for a NULL controller. */
+int fsm_controller_init(fsm_controller_t *controller);
+
+/* Apply a classified transition to the controller's stored outputs and state.
+   Return 0 on success, or -1 for NULL, an invalid next state, or unknown action.
+   The caller must obtain a transition appropriate to the inputs and deadline;
+   this function does not independently enforce the compressor lockout. */
+int fsm_apply_transition(
+	fsm_controller_t *controller,
+	fsm_transition_t transition,
+	time_t now
+);
+
 
 /* Return only the next state, using the same validation as fsm_get_transition.
    Callers that need to apply outputs should retrieve the action as well. */
