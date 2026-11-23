@@ -48,7 +48,8 @@ static void display_rgb_leds(uint32_t value);
 
 // API functions
 
-/* iom361_initialize() */
+/* Configure switch/LED counts and reset the simulated board.
+   rtn_code is optional: report 0 on success or 1 for invalid counts. */
 uint32_t* iom361_initialize(int num_switches, int num_leds, int* rtn_code) {
     if (num_switches < 0 || num_switches > 32 || num_leds < 0 || num_leds > 32) {
         if (rtn_code != NULL)
@@ -81,8 +82,10 @@ uint32_t* iom361_initialize(int num_switches, int num_leds, int* rtn_code) {
     return io_space_ptr;
 }
 
-/* iom361_readReg() */
+/* Read one validated register; return ERROR_VALUE if access is invalid.
+   Check rtn_code rather than interpreting the returned bits as an error flag. */
 uint32_t iom361_readReg(uint32_t* base, uint32_t offset, int* rtn_code) {
+    /* rc is the access status, separate from the register's uint32_t value. */
     int rc = check_access(base, offset);
 
     if (rtn_code != NULL)
@@ -99,8 +102,10 @@ uint32_t iom361_readReg(uint32_t* base, uint32_t offset, int* rtn_code) {
     return value;
 }
 
-/* iom361_writeReg() */
+/* Write a writable register and return its resulting contents.
+   Writes to read-only inputs leave their contents unchanged. */
 uint32_t iom361_writeReg(uint32_t* base, uint32_t offset, uint32_t value, int* rtn_code) {
+    /* Validate before indexing; optionally pass the status back to the caller. */
     int rc = check_access(base, offset);
 
     if (rtn_code != NULL)
@@ -134,7 +139,7 @@ uint32_t iom361_writeReg(uint32_t* base, uint32_t offset, uint32_t value, int* r
     return io_space[REG_INDEX(offset)];
 }
 
-/* build_rgb_reg() */
+/* Pack enable into bit 31 and RGB intensities into three eight-bit fields. */
 uint32_t build_rgb_reg(uint8_t enable, uint8_t red_dc, uint8_t green_dc, uint8_t blue_dc) {
     // shift unsigned values: (uint32_t) 1 << 31 is defined, 1 << 31 on an int is not
     return ((uint32_t) (enable & 0x01u) << 31)
@@ -143,12 +148,12 @@ uint32_t build_rgb_reg(uint8_t enable, uint8_t red_dc, uint8_t green_dc, uint8_t
          | ((uint32_t) blue_dc << 0);
 }
 
-/* iom361_set_display() */
+/* Control console visualization without changing register contents. */
 void iom361_set_display(bool on) {
     display_on = on;
 }
 
-/* iom361_seed() */
+/* Seed the C pseudo-random generator for repeatable sensor simulations. */
 void iom361_seed(unsigned int seed) {
     srand(seed);
 }
@@ -156,7 +161,7 @@ void iom361_seed(unsigned int seed) {
 
 // Functions used for testing - set register values for read-only registers
 
-/* _iom361_set_switches() */
+/* Inject simulated switch inputs, discarding bits outside the configured count. */
 void _iom361_set_switches(uint32_t value) {
     io_space[REG_INDEX(SWITCHES_REG)] = value & switch_mask();
 }
@@ -172,7 +177,7 @@ void _iom361_set_sensor1(float new_temp, float new_humid) {
     io_space[REG_INDEX(HUMID_REG)] = sensor_raw(new_humid, 0.0, 100.0);
 }
 
-/* _iom361_set_sensor1_rndm() */
+/* Choose temperature and humidity independently within the supplied ranges. */
 void _iom361_set_sensor1_rndm(float temp_low, float temp_hi,
     float humid_low, float humid_hi) {
     float new_temp = (float) random_in_range(temp_low, temp_hi);
@@ -189,6 +194,7 @@ void _iom361_set_sensor1_rndm(float temp_low, float temp_hi,
  * @return  0 if base and offset name a register, otherwise the return code
  */
 static int check_access(const uint32_t* base, uint32_t offset) {
+    /* Error priority: initialization, base address, range, then alignment. */
     if (!is_initialized)
         return 5;
     if (base != io_space_ptr)
@@ -204,6 +210,7 @@ static int check_access(const uint32_t* base, uint32_t offset) {
  * switch_mask() - the bits of the switch register that are switches
  */
 static uint32_t switch_mask(void) {
+    /* Handle 32 separately because shifting a 32-bit value by 32 is invalid. */
     return (nsw >= 32) ? 0xFFFFFFFFu : (((uint32_t) 1 << nsw) - 1u);
 }
 
