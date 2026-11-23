@@ -59,4 +59,7 @@ size_t bst_size(const bst_t *t);
  */
 size_t bst_height(const bst_t *t);
 
+/* Removes one copy of key. Returns 0 on success, -1 for NULL tree or missing key. */
+int bst_remove(bst_t *t, int key);
+
 #endif

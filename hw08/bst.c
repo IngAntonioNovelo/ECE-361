@@ -164,3 +164,65 @@ size_t bst_height(const bst_t *t)
 	}
 	return height_nodes(t->root);
 }
+
+/* Bonus: remove the first matching key found during BST search.
+ * A two-child node is replaced with the smallest key in its right subtree.
+ * Based on the original search and the BST ordering rule.
+ */
+int bst_remove(bst_t *t, int key)
+{
+	if (t == NULL)
+	{
+		return -1;
+	}
+
+	/* link points at whichever pointer currently owns the node. */
+	struct node **link = &t->root;
+	while (*link != NULL && (*link)->data != key)
+	{
+		if (key < (*link)->data)
+		{
+			link = &(*link)->leftChild;
+		}
+		else
+		{
+			link = &(*link)->rightChild;
+		}
+	}
+
+	if (*link == NULL)
+	{
+		return -1;
+	}
+
+	struct node *target = *link;
+	if (target->leftChild == NULL)
+	{
+		/* Zero or one child: splice in its right subtree. */
+		*link = target->rightChild;
+		free(target);
+	}
+	else if (target->rightChild == NULL)
+	{
+		/* Exactly one child: splice in its left subtree. */
+		*link = target->leftChild;
+		free(target);
+	}
+	else
+	{
+		/* Two children: find the inorder successor. */
+		struct node **successor_link = &target->rightChild;
+		while ((*successor_link)->leftChild != NULL)
+		{
+			successor_link = &(*successor_link)->leftChild;
+		}
+
+		struct node *successor = *successor_link;
+		target->data = successor->data;
+		*successor_link = successor->rightChild;
+		free(successor);
+	}
+
+	t->size--;
+	return 0;
+}

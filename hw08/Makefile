@@ -26,3 +26,10 @@ memcheck: tests/test_bst_asan
 
 clean:
 	rm -f treestats tests/test_bst tests/test_bst_asan tests/invalid_output.txt *.o
+
+.PHONY: bonus
+bonus: tests/test_remove_bonus
+	ASAN_OPTIONS=detect_leaks=1:halt_on_error=1 UBSAN_OPTIONS=halt_on_error=1 ./tests/test_remove_bonus
+
+tests/test_remove_bonus: tests/test_remove.c bst.c bst.h
+	$(CC) $(CFLAGS) $(SANFLAGS) bst.c tests/test_remove.c -o $@
