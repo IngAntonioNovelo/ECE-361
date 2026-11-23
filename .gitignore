@@ -7,3 +7,15 @@
 # Compiler-generated files
 *.o
 *.d
+/hw01/decode
+/hw03/tests/*_smoke
+/hw03/tests/*_smoke.c
+/hw03/tests/test_ptr
+/hw04/tests/*_smoke
+/hw04/tests/*_smoke.c
+/hw06/finish_hw06.sh
+/hw06/finish_hw06.sh:Zone.Identifier
+/hw06/replay
+/hw06/tests/test_hw06
+/hw06/tests/test_scenario
+/hw07/Pseudocode
