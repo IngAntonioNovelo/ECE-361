@@ -25,7 +25,7 @@ memcheck: tests/test_bst_asan
 	ASAN_OPTIONS=detect_leaks=1:halt_on_error=1 UBSAN_OPTIONS=halt_on_error=1 ./tests/test_bst_asan
 
 clean:
-	rm -f treestats tests/test_bst tests/test_bst_asan tests/invalid_output.txt *.o
+	rm -f treestats tests/test_bst tests/test_bst_asan tests/invalid_output.txt tests/test_remove_bonus *.o
 
 .PHONY: bonus
 bonus: tests/test_remove_bonus
